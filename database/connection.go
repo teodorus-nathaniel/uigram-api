@@ -11,10 +11,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var Client *mongo.Client
+var Database *mongo.Database
+var Context context.Context
 
 func getDatabaseConnection() string {
-	databaseConn := os.Getenv("DATABASE")
+	databaseConn := os.Getenv("DATABASE_CONNECTION")
 	databaseUsername := os.Getenv("DATABASE_USERNAME")
 	databasePassword := os.Getenv("DATABASE_PASSWORD")
 
@@ -26,15 +27,16 @@ func getDatabaseConnection() string {
 
 func InitializeClient() {
 	databaseConn := getDatabaseConnection()
+	databaseName := os.Getenv("DATABASE")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	Context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
+	client, err := mongo.Connect(Context, options.Client().ApplyURI(
 		databaseConn,
 	))
 
 	if err != nil {
 		log.Fatal("Error connecting to database...", err.Error())
 	}
-	Client = client
+	Database = client.Database(databaseName)
 }
