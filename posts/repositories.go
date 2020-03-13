@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetPosts(filters bson.M) []models.Post {
+func GetPosts(filters bson.M) []Post {
 	options := options.Find()
 	options.SetSort(bson.D{primitive.E{Key: "timestamp", Value: -1}})
 	//TODO: options.SetLimit(10), INI DARI URL QUERY
