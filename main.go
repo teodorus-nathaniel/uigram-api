@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
-	"github.com/teodorus-nathaniel/uigram-api/routes"
+	"github.com/teodorus-nathaniel/uigram-api/posts"
 )
 
 func initializeRoutes(router *gin.RouterGroup) {
-	routes.UsePostsRoutes(router)
+	posts.Routes(router.Group("/posts"))
 }
 
 func main() {

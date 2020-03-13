@@ -1,4 +1,4 @@
-package models
+package posts
 
 type Post struct {
 	ID          string    `json:"_id" bson:"_id"`
