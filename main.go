@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/teodorus-nathaniel/ui-share-api/database"
-	"github.com/teodorus-nathaniel/ui-share-api/routes"
+	"github.com/teodorus-nathaniel/uigram-api/database"
+	"github.com/teodorus-nathaniel/uigram-api/routes"
 )
 
 func initializeRoutes(router *gin.RouterGroup) {

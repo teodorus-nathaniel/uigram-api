@@ -3,8 +3,16 @@ package data
 import (
 	"time"
 
-	"github.com/teodorus-nathaniel/ui-share-api/models"
+	"github.com/teodorus-nathaniel/uigram-api/models"
 )
+
+var DummyPostWithoutID = models.Post{
+	Images:  []string{"https://www.bigstockphoto.com/images/homepage/module-6.jpg"},
+	Link: "htttps://google.com",
+	Description: "asff",
+	Timestamp: time.Now().String(),
+	UserID: "124",
+}
 
 var DummyPosts = [5]models.Post{
 	{

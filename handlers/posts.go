@@ -4,12 +4,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/teodorus-nathaniel/ui-share-api/data"
-	"github.com/teodorus-nathaniel/ui-share-api/database"
+	"github.com/teodorus-nathaniel/uigram-api/repositories"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetAllPosts(c *gin.Context) {
-	// sort := c.Query("sort")
-	database.Database.Collection("posts").InsertOne(database.Context, data.DummyPosts[0])
-	c.JSON(http.StatusOK, data.DummyPosts)
+func Posts(c *gin.Context)  {
+	
+	posts := repositories.GetPosts(bson.M{})
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"data": gin.H{
+			"posts": posts,
+		},
+	})
 }
