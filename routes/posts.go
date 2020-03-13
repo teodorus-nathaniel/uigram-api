@@ -7,5 +7,6 @@ import (
 
 func UsePostsRoutes(router *gin.RouterGroup) {
 	postsGroup := router.Group("/posts")
-	postsGroup.GET("/", handlers.Posts)	
+	postsGroup.GET("/", handlers.Posts)
+	// postsGroup.POST("/")
 }
