@@ -22,3 +22,15 @@ func GetPosts(filters bson.M) []Post {
 
 	return posts
 }
+
+func GetPost(filter bson.M) (*Post, error) {
+	res := database.Database.Collection("posts").FindOne(database.Context, filter)
+	var post Post
+	err := res.Decode(&post)
+
+	if err != nil {
+		return nil , err
+	}
+
+	return &post, nil
+}
