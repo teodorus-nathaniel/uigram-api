@@ -1,9 +1,11 @@
 package posts
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/teodorus-nathaniel/uigram-api/helper"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -28,3 +30,19 @@ func GetPostHandler(c *gin.Context){
 
 	c.JSON(http.StatusOK, jsend.GetJSendSuccess("post", post))
 }	
+
+func PostPostHandler(c *gin.Context){
+	var post Post
+	json.NewDecoder(c.Request.Body).Decode(&post)
+
+	bsonData, _ := helper.ConvertStructToBSON(post)
+
+	res, err := InsertPost(bsonData)
+
+	if err != nil || res == nil {
+		c.JSON(http.StatusBadRequest,jsend.GetJSendFail(err.Error()))
+		return
+	}
+	
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess("post", res))
+}

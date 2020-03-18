@@ -2,6 +2,41 @@
 
 
 [[projects]]
+  digest = "1:020a016a9321dbe44127f4ea775024f5c402cdc899d3479b6e7f0271f4951235"
+  name = "github.com/cosmtrek/air"
+  packages = [
+    ".",
+    "runner",
+  ]
+  pruneopts = "UT"
+  revision = "dbf12560b540f403e8ae955a98da0c4bb7f0e0d3"
+  version = "v1.12.0"
+
+[[projects]]
+  digest = "1:e29335d5a78621ed7a539ed75e10785c3705bb67d916e48b03b1cdf9b727508d"
+  name = "github.com/creack/pty"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3a6a957789163cacdfe0e291617a1c8e80612c11"
+  version = "v1.1.9"
+
+[[projects]]
+  digest = "1:bde2a1ce1de28312f165a88926c12f4acd19dc4d7da96a445dfa5a29eae07a93"
+  name = "github.com/fatih/color"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "daf2830f2741ebb735b21709a520c5f37d642d85"
+  version = "v1.9.0"
+
+[[projects]]
+  digest = "1:80057945464ffb5b0da1f026beb8df0e8dbd098eaf771a349291bed2cd29a83e"
+  name = "github.com/fsnotify/fsnotify"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "45d7d09e39ef4ac08d493309fa031790c15bfe8a"
+  version = "v1.4.9"
+
+[[projects]]
   digest = "1:3ee1d175a75b911a659fbd860060874c4f503e793c5870d13e5a0ede529a63cf"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
@@ -104,6 +139,14 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:0109cf4321a15313ec895f42e723e1f76121c6975ea006abfa20012272ec0937"
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "68e95eba382c972aafde02ead2cd2426a8a92480"
+  version = "v0.1.6"
+
+[[projects]]
   digest = "1:0c58d31abe2a2ccb429c559b6292e7df89dcda675456fecc282fa90aa08273eb"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
@@ -126,6 +169,14 @@
   pruneopts = "UT"
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
+
+[[projects]]
+  digest = "1:6eea828983c70075ca297bb915ffbcfd3e34c5a50affd94428a65df955c0ff9c"
+  name = "github.com/pelletier/go-toml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "903d9455db9ff1d7ac1ab199062eca7266dd11a3"
+  version = "v1.6.0"
 
 [[projects]]
   digest = "1:9e1d37b58d17113ec3cb5608ac0382313c5b59470b94ed97d0976e69c7022314"
@@ -258,9 +309,11 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/cosmtrek/air",
     "github.com/gin-gonic/gin",
     "github.com/joho/godotenv",
     "go.mongodb.org/mongo-driver/bson",
+    "go.mongodb.org/mongo-driver/bson/primitive",
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
   ]

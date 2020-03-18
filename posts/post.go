@@ -1,7 +1,7 @@
 package posts
 
 type Post struct {
-	ID          string    `json:"_id" bson:"_id"`
+	ID          string    `json:"_id,omitempty" bson:"_id,omitempty"`
 	UserID      string    `json:"userId" bson:"userId"`
 	Likes       *[]string `json:"likes" bson:"likes"`
 	Dislikes    *[]string `json:"dislikes" bson:"dislikes"`

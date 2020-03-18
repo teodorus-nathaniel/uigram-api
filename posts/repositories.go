@@ -34,3 +34,19 @@ func GetPost(filter bson.M) (*Post, error) {
 
 	return &post, nil
 }
+
+func InsertPost(document bson.M)(*Post, error) {
+	res, err := database.Database.Collection("posts").InsertOne(database.Context, document)
+
+	post, err2 := GetPost(bson.M{
+		"_id" : res.InsertedID,
+	})
+
+	if err != nil {
+		return nil, err
+	}else if err2 != nil{
+		return nil, err2
+	}
+
+	return post, nil
+}
