@@ -16,6 +16,7 @@ import (
 var Client *mongo.Client
 var Database *mongo.Database
 var Context context.Context
+var PostsCollection *mongo.Collection
 
 func getDatabaseConnection() string {
 	databaseConn := os.Getenv("DATABASE_CONNECTION")
@@ -37,9 +38,8 @@ func loadEnv() {
 func init() {
 	loadEnv()
 
-	fmt.Println("GET CONNECTION")
 	databaseConn := getDatabaseConnection()
-	databaseName := os.Getenv("DATABASE")
+	databaseName := "UIGramDatabase"
 
 	Context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -50,5 +50,8 @@ func init() {
 	if err != nil {
 		log.Fatal("Error connecting to database...", err.Error())
 	}
+	fmt.Println("Connected to database...")
+
 	Database = Client.Database(databaseName)
+	PostsCollection = Database.Collection("posts")
 }
