@@ -5,7 +5,7 @@ import (
 )
 
 func Routes(router *gin.RouterGroup) {
-	router.GET("/", GetPostsHandler)
-	router.GET("/:id", GetPostHandler)
-	router.POST("/", PostPostHandler)
+	router.GET("/", getPostsHandler)
+	router.GET("/:id", getPostHandler)
+	router.POST("/", postPostHandler)
 }

@@ -10,21 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func processDerivativeData(post *Post) {
-	post.LikeCount = len(post.Likes)
-	post.DislikeCount = len(post.Dislikes)
-	// post.Liked = cari itu ama saved jg ama disliked
-}
-
-func GetPosts(sort string, limit int, page int) ([]Post, error) {
-	options := options.Find()
-	options.SetSort(bson.D{
+func getPosts(sort string, limit int, page int) ([]Post, error) {
+	opts := options.Find()
+	opts.SetSort(bson.D{
 		primitive.E{Key: "timestamp", Value: -1},
 	})
-	options.SetSkip(int64(limit * (page - 1)))
-	options.SetLimit(int64(limit))
+	opts.SetSkip(int64(limit * (page - 1)))
+	opts.SetLimit(int64(limit))
 
-	cursor, err := database.PostsCollection.Find(context.TODO(), bson.M{}, options)
+	cursor, err := database.PostsCollection.Find(context.TODO(), bson.M{}, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +29,7 @@ func GetPosts(sort string, limit int, page int) ([]Post, error) {
 	for cursor.Next(database.Context) {
 		var post Post
 		cursor.Decode(&post)
-
-		processDerivativeData(&post)
+		post.deriveToPost()
 
 		posts = append(posts, post)
 	}
@@ -44,29 +37,34 @@ func GetPosts(sort string, limit int, page int) ([]Post, error) {
 	return posts, nil
 }
 
-func GetPost(filter bson.M) (*Post, error) {
-	res := database.Database.Collection("posts").FindOne(database.Context, filter)
-	var post Post
-	err := res.Decode(&post)
-
+func getPost(id string) (*Post, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println(oid)
+	var post Post
+	err = database.Database.Collection("posts").FindOne(database.Context, primitive.M{"_id": oid}).Decode(&post)
+	if err != nil {
+		return nil, err
+	}
+
+	post.deriveToPostDetail()
+
 	return &post, nil
 }
 
-func InsertPost(document bson.M) (*Post, error) {
+func insertPost(document Post) (*Post, error) {
 	res, err := database.Database.Collection("posts").InsertOne(database.Context, document)
-
-	post, err2 := GetPost(bson.M{
-		"_id": res.InsertedID,
-	})
-
 	if err != nil {
 		return nil, err
-	} else if err2 != nil {
-		return nil, err2
+	}
+
+	id := res.InsertedID.(primitive.ObjectID)
+	post, err := getPost(id.String())
+	if err != nil {
+		return nil, err
 	}
 
 	return post, nil
