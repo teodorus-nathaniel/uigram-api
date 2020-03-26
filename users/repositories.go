@@ -1,14 +1,11 @@
 package users
 
 import (
-	"fmt"
-
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetUser(filter primitive.M) (*User, error) {
-	fmt.Println(filter)
 	var user User
 	err := database.UsersCollection.FindOne(database.Context, filter).Decode(&user)
 	if err != nil {

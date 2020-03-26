@@ -10,8 +10,10 @@ import (
 )
 
 func loginHandler(c *gin.Context) {
-	var credentials *users.Credentials
+	credentials := &users.Credentials{}
 	json.NewDecoder(c.Request.Body).Decode(&credentials)
+	// credentials.Email = c.Query("email")
+	// credentials.Password = c.Query("password")
 
 	err := credentials.ValidateEmailPassword()
 	if err != nil {

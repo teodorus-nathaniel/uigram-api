@@ -2,7 +2,6 @@ package posts
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,7 +22,6 @@ func getPosts(sort string, limit int, page int) ([]Post, error) {
 		return nil, err
 	}
 
-	fmt.Println(sort, limit, page)
 	posts := []Post{}
 	defer cursor.Close(database.Context)
 	for cursor.Next(database.Context) {
@@ -43,7 +41,6 @@ func getPost(id string) (*Post, error) {
 		return nil, err
 	}
 
-	fmt.Println(oid)
 	var post Post
 	err = database.Database.Collection("posts").FindOne(database.Context, primitive.M{"_id": oid}).Decode(&post)
 	if err != nil {
