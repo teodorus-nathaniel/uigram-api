@@ -25,7 +25,11 @@ func registerHandler(c *gin.Context) {
 		return
 	}
 
-	sendTokenAsCookie(c, user.ID.Hex())
+	token, err := getToken(user.ID.Hex())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
+	}
 
-	c.JSON(http.StatusCreated, jsend.GetJSendSuccess("user", user))
+	user.DeriveAttributesAndHideCredentials()
+	c.JSON(http.StatusCreated, jsend.GetJSendSuccess(gin.H{"user": user, "token": token}))
 }

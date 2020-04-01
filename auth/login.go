@@ -12,8 +12,6 @@ import (
 func loginHandler(c *gin.Context) {
 	credentials := &users.Credentials{}
 	json.NewDecoder(c.Request.Body).Decode(&credentials)
-	// credentials.Email = c.Query("email")
-	// credentials.Password = c.Query("password")
 
 	err := credentials.ValidateEmailPassword()
 	if err != nil {
@@ -21,13 +19,22 @@ func loginHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := users.GetUserByEmailAndPassword(credentials.Email, credentials.Password)
-	if err != nil {
+	user, err := users.GetUserByEmail(credentials.Email)
+
+	isRightPass := false
+	if user != nil {
+		isRightPass = user.IsRightPassword(credentials.Password)
+	}
+	if err != nil || !isRightPass {
 		c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("invalid email or password"))
 		return
 	}
 
-	sendTokenAsCookie(c, user.ID.Hex())
+	token, err := getToken(user.ID.Hex())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
+	}
 
-	c.JSON(http.StatusOK, jsend.GetJSendSuccess("user", user))
+	user.DeriveAttributesAndHideCredentials()
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"user": user, "token": token}))
 }

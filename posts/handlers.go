@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
+	"github.com/teodorus-nathaniel/uigram-api/users"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func getPostsHandler(c *gin.Context) {
+func getQueryStringsForPagination(c *gin.Context) (string, int, int) {
 	sort := c.Query("sort")
 	limitTemp := c.Query("limit")
 	pageTemp := c.Query("page")
@@ -28,13 +30,35 @@ func getPostsHandler(c *gin.Context) {
 		page = 1
 	}
 
+	return sort, limit, page
+}
+
+func getPostsHandler(c *gin.Context) {
+	sort, limit, page := getQueryStringsForPagination(c)
+
 	posts, err := getPosts(sort, limit, page)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, jsend.GetJSendSuccess("posts", posts))
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"posts": posts}))
+}
+
+func getPostsFeedsHandler(c *gin.Context) {
+	_, limit, page := getQueryStringsForPagination(c)
+
+	data, _ := c.Get("user")
+	user := data.(*users.User)
+
+	followingIds := user.Following
+	posts, err := getPostsByUserId(followingIds, limit, page)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"posts": posts}))
 }
 
 func getPostHandler(c *gin.Context) {
@@ -46,7 +70,7 @@ func getPostHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, jsend.GetJSendSuccess("post", post))
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"post": post}))
 }
 
 func postPostHandler(c *gin.Context) {
@@ -54,11 +78,18 @@ func postPostHandler(c *gin.Context) {
 	json.NewDecoder(c.Request.Body).Decode(&post)
 
 	post.ID = primitive.NilObjectID
+	post.Timestamp = time.Now().String()
+
 	err := post.validateData()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, jsend.GetJSendFail(err.Error()))
 		return
 	}
+
+	post.fillEmptyValues()
+
+	user, _ := c.Get("user")
+	post.UserID = user.(*users.User).ID.Hex()
 
 	res, err := insertPost(post)
 
@@ -67,5 +98,5 @@ func postPostHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, jsend.GetJSendSuccess("post", res))
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"post": res}))
 }

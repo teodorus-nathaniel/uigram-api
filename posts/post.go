@@ -3,26 +3,42 @@ package posts
 import (
 	"errors"
 
+	"github.com/teodorus-nathaniel/uigram-api/users"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type Owner struct {
+	ID         string `json:"id"`
+	Username   string `json:"username"`
+	ProfilePic string `json:"profilePic,omitempty"`
+}
+
 type Post struct {
-	ID     primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	UserID string             `json:"-" bson:"userId"`
-	Title  string             `json:"title" bson:"title"`
-	// Owner `json:"owner"` pake user id di atas
-	Likes         []string `json:"likes" bson:"likes"`
-	Dislikes      []string `json:"dislikes" bson:"dislikes"`
-	Description   *string  `json:"description,omitempty" bson:"description"`
-	Link          *string  `json:"link,omitempty" bson:"link,omitempty"`
-	Images        []string `json:"images" bson:"images"`
-	Timestamp     string   `json:"timestamp" bson:"timestamp"`
-	LikeCount     int      `json:"likeCount"`
-	DislikeCount  int      `json:"dislikeCount"`
-	CommentsCount int      `json:"commentsCount"`
-	Liked         bool     `json:"liked,omitempty"`
-	Disliked      bool     `json:"disliked,omitempty"`
-	Saved         bool     `json:"saved,omitempty"`
+	ID            primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserID        string             `json:"-" bson:"userId"`
+	Title         string             `json:"title" bson:"title"`
+	Owner         *Owner             `json:"owner" bson:"-"`
+	Likes         []string           `json:"likes" bson:"likes"`
+	Dislikes      []string           `json:"dislikes" bson:"dislikes"`
+	Description   *string            `json:"description,omitempty" bson:"description"`
+	Link          *string            `json:"link,omitempty" bson:"link,omitempty"`
+	Images        []string           `json:"images" bson:"images"`
+	Timestamp     string             `json:"timestamp" bson:"timestamp"`
+	LikeCount     int                `json:"likeCount" bson:"-"`
+	DislikeCount  int                `json:"dislikeCount" bson:"-"`
+	CommentsCount int                `json:"commentsCount" bson:"-"`
+	Liked         bool               `json:"liked,omitempty" bson:"-"`
+	Disliked      bool               `json:"disliked,omitempty" bson:"-"`
+	Saved         bool               `json:"saved,omitempty" bson:"-"`
+}
+
+func (post *Post) fillEmptyValues() {
+	if post.Likes == nil {
+		post.Likes = []string{}
+	}
+	if post.Dislikes == nil {
+		post.Dislikes = []string{}
+	}
 }
 
 func (post *Post) validateData() error {
@@ -39,6 +55,9 @@ func (post *Post) validateData() error {
 func (post *Post) addDerivedData() {
 	post.LikeCount = len(post.Likes)
 	post.DislikeCount = len(post.Dislikes)
+
+	res, _ := users.GetUserById(post.UserID)
+	post.Owner = &Owner{ID: res.ID.Hex(), ProfilePic: res.ProfilePic, Username: res.Username}
 	// post.Liked = cari itu ama saved jg ama disliked
 }
 

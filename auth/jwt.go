@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -42,37 +43,52 @@ func createToken(id string, expireTime time.Duration) (*string, error) {
 	return &tokenString, nil
 }
 
-func sendTokenAsCookie(c *gin.Context, id string) {
+func getToken(id string) (*string, error) {
 	expireTime := 1 * time.Minute
 	token, err := createToken(id, expireTime)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
-		return
+		return nil, err
 	}
-	c.SetCookie("token", *token, int(expireTime), "/", "localhost:8080", false, false)
+	return token, nil
+}
+
+func getTokenFromHeader(c *gin.Context) (*string, bool) {
+	header := c.GetHeader("Authorization")
+	stringTokens := strings.Split(header, " ")
+
+	if len(stringTokens) != 2 {
+		return nil, false
+	}
+	return &stringTokens[1], true
 }
 
 func Protect() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := c.Cookie("token")
+		token, exists := getTokenFromHeader(c)
 
-		if err != nil {
+		if !exists {
 			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("The resource you are looking for is restricted. Please login first"))
+			c.Abort()
+			return
 		}
 
 		claims := &Claims{}
-		tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		tkn, err := jwt.ParseWithClaims(*token, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
 
 		claims, ok := tkn.Claims.(*Claims)
 		if !ok || !tkn.Valid {
 			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("Token invalid or has expired. Please login first"))
+			c.Abort()
+			return
 		}
 
 		user, err := users.GetUserById(claims.ID)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("user for this token is invalid"))
+			c.Abort()
+			return
 		}
 
 		c.Set("user", user)

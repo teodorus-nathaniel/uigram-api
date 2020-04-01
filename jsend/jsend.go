@@ -4,18 +4,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetJSendSuccess(name string, data interface{}) gin.H {
+func GetJSendSuccess(data gin.H) gin.H {
 	return gin.H{
 		"status": "success",
-		"data": gin.H{
-			name: data,
-		},
+		"data":   data,
 	}
 }
 
 func GetJSendFail(err string) gin.H {
 	return gin.H{
-		"status": "fail",
+		"status":  "fail",
 		"message": err,
 	}
 }

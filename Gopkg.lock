@@ -144,6 +144,17 @@
   version = "v0.9.1"
 
 [[projects]]
+  digest = "1:49013b7a6257826f95fda3b53897e83b0f5c431213cf90bfb86b773d7164a46b"
+  name = "github.com/rs/cors"
+  packages = [
+    ".",
+    "wrapper/gin",
+  ]
+  pruneopts = "UT"
+  revision = "db0fe48135e83b5812a5a31be0eea66984b1b521"
+  version = "v1.7.0"
+
+[[projects]]
   digest = "1:1d4ed6179f215ac661d5c447022b4d10074fbd8829b55e2d405d2a65496a278b"
   name = "github.com/ugorji/go"
   packages = ["codec"]
@@ -209,9 +220,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f92f6956e4059f6a3efc14924d2dd58ba90da25cc57fe07ae3779ef2f5e0c5f2"
+  digest = "1:d71baed52a5a67407a72b63949aa042ea68bb32fdab03e07704a4f1dc309d193"
   name = "golang.org/x/crypto"
-  packages = ["pbkdf2"]
+  packages = [
+    "bcrypt",
+    "blowfish",
+    "pbkdf2",
+  ]
   pruneopts = "UT"
   revision = "f7b00557c8c46a1ea4b035cae84f52028c2c0564"
 
@@ -269,10 +284,12 @@
     "github.com/dgrijalva/jwt-go",
     "github.com/gin-gonic/gin",
     "github.com/joho/godotenv",
+    "github.com/rs/cors/wrapper/gin",
     "go.mongodb.org/mongo-driver/bson",
     "go.mongodb.org/mongo-driver/bson/primitive",
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
+    "golang.org/x/crypto/bcrypt",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

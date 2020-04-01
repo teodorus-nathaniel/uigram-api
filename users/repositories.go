@@ -1,6 +1,8 @@
 package users
 
 import (
+	"errors"
+
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -15,10 +17,9 @@ func GetUser(filter primitive.M) (*User, error) {
 	return &user, nil
 }
 
-func GetUserByEmailAndPassword(email, password string) (*User, error) {
+func GetUserByEmail(email string) (*User, error) {
 	return GetUser(primitive.M{
-		"email":    email,
-		"password": password,
+		"email": email,
 	})
 }
 
@@ -35,6 +36,16 @@ func GetUserById(id string) (*User, error) {
 
 func InsertUser(document *User) (*User, error) {
 	document.fillEmptyValues()
+	duplicateEmail, err := GetUserByEmail(document.Email)
+	if duplicateEmail != nil {
+		return nil, errors.New("email is already used")
+	}
+
+	err = document.hashPassword()
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := database.UsersCollection.InsertOne(database.Context, document)
 	if err != nil {
 		return nil, err
