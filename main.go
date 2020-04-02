@@ -25,6 +25,7 @@ func main() {
 	router.Use(cors.New(cors.Options{
 		Debug:          true,
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
+		AllowedMethods: []string{"POST", "GET", "HEAD", "PUT"},
 	}))
 
 	routerGroup := router.Group("/api/v1")
