@@ -6,8 +6,8 @@ import (
 )
 
 func Routes(router *gin.RouterGroup) {
-	router.GET("/", getPostsHandler)
-	router.GET("/:id", getPostHandler)
-	router.GET("/:id/feeds", auth.Protect(), getPostsFeedsHandler)
-	router.POST("/", auth.Protect(), postPostHandler)
+	router.GET("/posts", getPostsHandler)
+	router.GET("/posts/:id", getPostHandler)
+	router.GET("/posts/:id/feeds", auth.Protect(), getPostsFeedsHandler)
+	router.POST("/posts", auth.Protect(), postPostHandler)
 }

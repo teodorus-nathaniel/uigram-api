@@ -13,9 +13,9 @@ import (
 )
 
 func initializeRoutes(router *gin.RouterGroup) {
-	auth.Routes(router.Group("/"))
-	posts.Routes(router.Group("/posts"))
-	users.Routes(router.Group("/users"))
+	auth.Routes(router)
+	posts.Routes(router)
+	users.Routes(router)
 }
 
 func main() {
