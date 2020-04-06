@@ -23,7 +23,7 @@ type Post struct {
 	Description   *string            `json:"description,omitempty" bson:"description"`
 	Link          *string            `json:"link,omitempty" bson:"link,omitempty"`
 	Images        []string           `json:"images" bson:"images"`
-	Timestamp     string             `json:"timestamp" bson:"timestamp"`
+	Timestamp     int64              `json:"timestamp" bson:"timestamp"`
 	LikeCount     int                `json:"likeCount" bson:"-"`
 	DislikeCount  int                `json:"dislikeCount" bson:"-"`
 	CommentsCount int                `json:"commentsCount" bson:"-"`
@@ -52,7 +52,7 @@ func (post *Post) validateData() error {
 	return nil
 }
 
-func (post *Post) addDerivedData() {
+func (post *Post) processData() {
 	post.LikeCount = len(post.Likes)
 	post.DislikeCount = len(post.Dislikes)
 
@@ -62,7 +62,7 @@ func (post *Post) addDerivedData() {
 }
 
 func (post *Post) deriveToPost() {
-	post.addDerivedData()
+	post.processData()
 
 	post.Link = nil
 	post.Description = nil
@@ -71,7 +71,7 @@ func (post *Post) deriveToPost() {
 }
 
 func (post *Post) deriveToPostDetail() {
-	post.addDerivedData()
+	post.processData()
 }
 
 // id: string;

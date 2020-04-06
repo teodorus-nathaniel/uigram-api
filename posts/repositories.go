@@ -2,6 +2,7 @@ package posts
 
 import (
 	"context"
+	"time"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"go.mongodb.org/mongo-driver/bson"
@@ -88,6 +89,9 @@ func getPost(id string) (*Post, error) {
 }
 
 func insertPost(document Post) (*Post, error) {
+	document.ID = primitive.NilObjectID
+	document.Timestamp = time.Now().Unix()
+
 	res, err := database.Database.Collection("posts").InsertOne(database.Context, document)
 	if err != nil {
 		return nil, err

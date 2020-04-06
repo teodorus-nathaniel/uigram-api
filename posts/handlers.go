@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
 	"github.com/teodorus-nathaniel/uigram-api/users"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func getQueryStringsForPagination(c *gin.Context) (string, int, int) {
@@ -76,9 +74,6 @@ func getPostHandler(c *gin.Context) {
 func postPostHandler(c *gin.Context) {
 	var post Post
 	json.NewDecoder(c.Request.Body).Decode(&post)
-
-	post.ID = primitive.NilObjectID
-	post.Timestamp = time.Now().String()
 
 	err := post.validateData()
 	if err != nil {
