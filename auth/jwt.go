@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -62,6 +63,25 @@ func getTokenFromHeader(c *gin.Context) (*string, bool) {
 	return &stringTokens[1], true
 }
 
+func ValidateToken(token *string) (*users.User, error) {
+	claims := &Claims{}
+	tkn, err := jwt.ParseWithClaims(*token, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	claims, ok := tkn.Claims.(*Claims)
+	if !ok || !tkn.Valid {
+		return nil, errors.New("Token invalid or has expired. Please login first")
+	}
+
+	user, err := users.GetUserById(claims.ID)
+	if err != nil {
+		return nil, errors.New("user for this token is invalid")
+	}
+
+	return user, err
+}
+
 func Protect() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, exists := getTokenFromHeader(c)
@@ -72,21 +92,9 @@ func Protect() gin.HandlerFunc {
 			return
 		}
 
-		claims := &Claims{}
-		tkn, err := jwt.ParseWithClaims(*token, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
-
-		claims, ok := tkn.Claims.(*Claims)
-		if !ok || !tkn.Valid {
-			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("Token invalid or has expired. Please login first"))
-			c.Abort()
-			return
-		}
-
-		user, err := users.GetUserById(claims.ID)
+		user, err := ValidateToken(token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("user for this token is invalid"))
+			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail(err.Error()))
 			c.Abort()
 			return
 		}

@@ -1,7 +1,6 @@
 package posts
 
 import (
-	"context"
 	"time"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
@@ -43,7 +42,7 @@ func getPostsDataFromCursor(cursor *mongo.Cursor) []Post {
 func getPosts(sort string, limit int, page int) ([]Post, error) {
 	opts := getFindQueryOptions(sort, limit, page)
 
-	cursor, err := database.PostsCollection.Find(context.TODO(), bson.M{}, opts)
+	cursor, err := database.PostsCollection.Find(database.Context, bson.M{}, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +85,19 @@ func getPost(id string) (*Post, error) {
 	post.deriveToPostDetail()
 
 	return &post, nil
+}
+
+func GetPostByOwner(id, sort string, limit, page int) ([]Post, error) {
+	opts := getFindQueryOptions(sort, limit, page)
+
+	cursor, err := database.PostsCollection.Find(database.Context, primitive.M{"userId": id}, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	posts := getPostsDataFromCursor(cursor)
+
+	return posts, nil
 }
 
 func insertPost(document Post) (*Post, error) {

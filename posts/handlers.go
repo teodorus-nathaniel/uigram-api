@@ -3,36 +3,15 @@ package posts
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
 	"github.com/teodorus-nathaniel/uigram-api/users"
+	"github.com/teodorus-nathaniel/uigram-api/utils"
 )
 
-func getQueryStringsForPagination(c *gin.Context) (string, int, int) {
-	sort := c.Query("sort")
-	limitTemp := c.Query("limit")
-	pageTemp := c.Query("page")
-
-	limit, _ := strconv.Atoi(limitTemp)
-	page, _ := strconv.Atoi(pageTemp)
-
-	if sort == "" {
-		sort = "timestamp"
-	}
-	if limit == 0 {
-		limit = 15
-	}
-	if page == 0 {
-		page = 1
-	}
-
-	return sort, limit, page
-}
-
 func getPostsHandler(c *gin.Context) {
-	sort, limit, page := getQueryStringsForPagination(c)
+	sort, limit, page := utils.GetQueryStringsForPagination(c)
 
 	posts, err := getPosts(sort, limit, page)
 	if err != nil {
@@ -44,7 +23,7 @@ func getPostsHandler(c *gin.Context) {
 }
 
 func getPostsFeedsHandler(c *gin.Context) {
-	_, limit, page := getQueryStringsForPagination(c)
+	_, limit, page := utils.GetQueryStringsForPagination(c)
 
 	data, _ := c.Get("user")
 	user := data.(*users.User)
@@ -94,4 +73,17 @@ func postPostHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"post": res}))
+}
+
+func getUserPostHandler(c *gin.Context) {
+	id := c.Param("id")
+	sort, limit, page := utils.GetQueryStringsForPagination(c)
+
+	posts, err := GetPostByOwner(id, sort, limit, page)
+	if err != nil {
+		c.JSON(http.StatusNotFound, jsend.GetJSendFail("Fail fetching user posts"))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"posts": posts}))
 }

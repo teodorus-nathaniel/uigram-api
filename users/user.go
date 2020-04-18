@@ -72,7 +72,7 @@ func ValidateEmailPassword(email, password string) error {
 	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 	if !re.MatchString(email) {
-		return errors.New("invalid email")
+		return errors.New("invalid email format")
 	}
 	if len(password) < 5 {
 		return errors.New("password must be more than 5 characters")
