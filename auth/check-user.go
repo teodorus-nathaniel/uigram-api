@@ -19,12 +19,14 @@ func checkUserHandler(c *gin.Context) {
 	user, err := ValidateToken(token.Token)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, jsend.GetJSendFail(err.Error()))
+		return
 	}
 
 	newToken, err := getToken(user.ID.Hex())
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
+		return
 	}
 
 	user.DeriveAttributesAndHideCredentials()
