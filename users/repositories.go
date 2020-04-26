@@ -5,6 +5,7 @@ import (
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetUser(filter primitive.M) (*User, error) {
@@ -57,4 +58,59 @@ func InsertUser(document *User) (*User, error) {
 	}
 
 	return user, nil
+}
+
+func AppendArray(id, attribute, data string) (*mongo.UpdateResult, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	oidData, err := primitive.ObjectIDFromHex(data)
+	if err != nil {
+		return nil, err
+	}
+	res, err := database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
+		"$push": primitive.M{
+			attribute: primitive.M{
+				"$each":     primitive.A{oidData.Hex()},
+				"$position": 0,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func DeleteArrayElement(id, attribute, data string) (*mongo.UpdateResult, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	oidData, err := primitive.ObjectIDFromHex(data)
+	if err != nil {
+		return nil, err
+	}
+	res, err := database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
+		"$pull": primitive.M{
+			attribute: primitive.A{oidData.Hex()},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func AppendFollower(id, follower string) (*mongo.UpdateResult, error) {
+	return AppendArray(id, "followers", follower)
+}
+
+func AppendFollowing(id, following string) (*mongo.UpdateResult, error) {
+	return AppendArray(id, "following", following)
+}
+
+func PullFollower(id, follower string) (*mongo.UpdateResult, error) {
+	return DeleteArrayElement(id, "followers", follower)
+}
+
+func PullFollowing(id, following string) (*mongo.UpdateResult, error) {
+	return DeleteArrayElement(id, "following", following)
 }

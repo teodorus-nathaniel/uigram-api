@@ -10,10 +10,18 @@ import (
 	"github.com/teodorus-nathaniel/uigram-api/utils"
 )
 
+func getUserFromMiddleware(c *gin.Context) *users.User {
+	user, _ := c.Get("user")
+	if user == nil {
+		return nil
+	}
+	return user.(*users.User)
+}
+
 func getPostsHandler(c *gin.Context) {
 	sort, limit, page := utils.GetQueryStringsForPagination(c)
 
-	posts, err := getPosts(sort, limit, page)
+	posts, err := getPosts(sort, limit, page, getUserFromMiddleware(c))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return
@@ -29,7 +37,7 @@ func getPostsFeedsHandler(c *gin.Context) {
 	user := data.(*users.User)
 
 	followingIds := user.Following
-	posts, err := getPostsByUserId(followingIds, limit, page)
+	posts, err := getPostsByUserId(followingIds, limit, page, getUserFromMiddleware(c))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return
@@ -40,7 +48,7 @@ func getPostsFeedsHandler(c *gin.Context) {
 
 func getPostHandler(c *gin.Context) {
 	id := c.Param("id")
-	post, err := getPost(id)
+	post, err := getPost(id, getUserFromMiddleware(c))
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, jsend.GetJSendFail("post with id: "+id+" was not found"))
@@ -65,7 +73,7 @@ func postPostHandler(c *gin.Context) {
 	user, _ := c.Get("user")
 	post.UserID = user.(*users.User).ID.Hex()
 
-	res, err := insertPost(post)
+	res, err := insertPost(post, getUserFromMiddleware(c))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
@@ -79,7 +87,7 @@ func getUserPostHandler(c *gin.Context) {
 	id := c.Param("id")
 	sort, limit, page := utils.GetQueryStringsForPagination(c)
 
-	posts, err := GetPostByOwner(id, sort, limit, page)
+	posts, err := GetPostByOwner(id, sort, limit, page, getUserFromMiddleware(c))
 	if err != nil {
 		c.JSON(http.StatusNotFound, jsend.GetJSendFail("Fail fetching user posts"))
 		return

@@ -5,7 +5,10 @@ import (
 )
 
 func Routes(router *gin.RouterGroup) {
+	router.POST("/login", loginHandler)
+	router.POST("/register", registerHandler)
+	router.POST("/check-user", checkUserHandler)
 	router.GET("/users/:id", getUserHandler)
-	// router.GET("/", GetPostsHandler)
-	// router.POST("/", PostPostHandler)
+	router.PATCH("/users/:id/follow", Protect(), followUserHandler)
+	router.PATCH("/users/:id/unfollow", Protect(), unfollowUserHandler)
 }

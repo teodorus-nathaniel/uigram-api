@@ -1,4 +1,4 @@
-package auth
+package users
 
 import (
 	"encoding/json"
@@ -29,6 +29,6 @@ func checkUserHandler(c *gin.Context) {
 		return
 	}
 
-	user.DeriveAttributesAndHideCredentials()
+	user.DeriveAttributesAndHideCredentials(getUserFromMiddleware(c))
 	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"user": user, "token": newToken}))
 }

@@ -1,4 +1,4 @@
-package auth
+package users
 
 import (
 	"encoding/json"
@@ -6,11 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
-	"github.com/teodorus-nathaniel/uigram-api/users"
 )
 
 func registerHandler(c *gin.Context) {
-	var data *users.User
+	var data *User
 	json.NewDecoder(c.Request.Body).Decode(&data)
 
 	err := data.ValidateData()
@@ -19,7 +18,7 @@ func registerHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := users.InsertUser(data)
+	user, err := InsertUser(data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return
@@ -30,6 +29,6 @@ func registerHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 	}
 
-	user.DeriveAttributesAndHideCredentials()
+	user.DeriveAttributesAndHideCredentials(getUserFromMiddleware(c))
 	c.JSON(http.StatusCreated, jsend.GetJSendSuccess(gin.H{"user": user, "token": token}))
 }

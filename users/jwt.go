@@ -1,4 +1,4 @@
-package auth
+package users
 
 import (
 	"errors"
@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
-	"github.com/teodorus-nathaniel/uigram-api/users"
 )
 
 var jwtKey []byte
@@ -45,7 +44,7 @@ func createToken(id string, expireTime time.Duration) (*string, error) {
 }
 
 func getToken(id string) (*string, error) {
-	expireTime := 1 * time.Minute
+	expireTime := 7 * 24 * time.Hour
 	token, err := createToken(id, expireTime)
 	if err != nil {
 		return nil, err
@@ -63,7 +62,7 @@ func getTokenFromHeader(c *gin.Context) (*string, bool) {
 	return &stringTokens[1], true
 }
 
-func ValidateToken(token *string) (*users.User, error) {
+func ValidateToken(token *string) (*User, error) {
 	claims := &Claims{}
 	tkn, err := jwt.ParseWithClaims(*token, claims, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
@@ -74,7 +73,7 @@ func ValidateToken(token *string) (*users.User, error) {
 		return nil, errors.New("Token invalid or has expired. Please login first")
 	}
 
-	user, err := users.GetUserById(claims.ID)
+	user, err := GetUserById(claims.ID)
 	if err != nil {
 		return nil, errors.New("user for this token is invalid")
 	}
@@ -84,18 +83,28 @@ func ValidateToken(token *string) (*users.User, error) {
 
 func Protect() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		user, _ := c.Get("user")
+		if user == nil {
+			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("The resource you are looking for is restricted. Please login first"))
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func GetUserMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		token, exists := getTokenFromHeader(c)
 
 		if !exists {
-			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("The resource you are looking for is restricted. Please login first"))
-			c.Abort()
+			c.Set("user", nil)
 			return
 		}
 
 		user, err := ValidateToken(token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail(err.Error()))
-			c.Abort()
+			c.Set("user", nil)
 			return
 		}
 

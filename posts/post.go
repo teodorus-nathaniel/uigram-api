@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/teodorus-nathaniel/uigram-api/users"
+	"github.com/teodorus-nathaniel/uigram-api/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -11,6 +12,7 @@ type Owner struct {
 	ID         string `json:"id"`
 	Username   string `json:"username"`
 	ProfilePic string `json:"profilePic,omitempty"`
+	Followed   bool   `json:"followed"`
 }
 
 type Post struct {
@@ -52,17 +54,20 @@ func (post *Post) validateData() error {
 	return nil
 }
 
-func (post *Post) processData() {
+func (post *Post) processData(user *users.User) {
 	post.LikeCount = len(post.Likes)
 	post.DislikeCount = len(post.Dislikes)
 
 	res, _ := users.GetUserById(post.UserID)
-	post.Owner = &Owner{ID: res.ID.Hex(), ProfilePic: res.ProfilePic, Username: res.Username}
+	post.Owner = &Owner{ID: res.ID.Hex(), ProfilePic: res.ProfilePic, Username: res.Username, Followed: false}
+	if user != nil {
+		post.Owner.Followed = utils.SearchArray(user.Following, post.Owner.ID)
+	}
 	// post.Liked = cari itu ama saved jg ama disliked
 }
 
-func (post *Post) deriveToPost() {
-	post.processData()
+func (post *Post) deriveToPost(user *users.User) {
+	post.processData(user)
 
 	post.Link = nil
 	post.Description = nil
@@ -70,8 +75,8 @@ func (post *Post) deriveToPost() {
 	post.Dislikes = nil
 }
 
-func (post *Post) deriveToPostDetail() {
-	post.processData()
+func (post *Post) deriveToPostDetail(user *users.User) {
+	post.processData(user)
 }
 
 // id: string;

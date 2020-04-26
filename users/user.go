@@ -4,8 +4,10 @@ import (
 	"errors"
 	"regexp"
 
+	"github.com/teodorus-nathaniel/uigram-api/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/exp/errors/fmt"
 )
 
 type Credentials struct {
@@ -25,6 +27,7 @@ type User struct {
 	FollowingCount int                 `json:"followingCount" bson:"-"`
 	FollowersCount int                 `json:"followersCount" bson:"-"`
 	Status         string              `json:"status" bson:"status"`
+	Followed       bool                `json:"followed" bson:"-"`
 }
 
 func (user *User) fillEmptyValues() {
@@ -62,10 +65,15 @@ func (user *User) HideCredentials() {
 	user.Password = nil
 }
 
-func (user *User) DeriveAttributesAndHideCredentials() {
+func (user *User) DeriveAttributesAndHideCredentials(self *User) {
 	user.HideCredentials()
 	user.FollowersCount = len(user.Followers)
 	user.FollowingCount = len(user.Following)
+
+	fmt.Println(self.Following, user.ID.Hex())
+	if self != nil && utils.SearchArray(self.Following, user.ID.Hex()) {
+		user.Followed = true
+	}
 }
 
 func ValidateEmailPassword(email, password string) error {
