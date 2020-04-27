@@ -1,10 +1,12 @@
 package users
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
+	"github.com/teodorus-nathaniel/uigram-api/utils"
 )
 
 func getUserFromMiddleware(c *gin.Context) *User {
@@ -40,14 +42,14 @@ func followUserHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = AppendFollowing(user.ID.Hex(), id)
+	res, err := AppendFollowing(user.ID.Hex(), id)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusNoContent, gin.H{})
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"modifiedCount": res.ModifiedCount}))
 }
 
 func unfollowUserHandler(c *gin.Context) {
@@ -61,12 +63,83 @@ func unfollowUserHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = PullFollowing(user.ID.Hex(), id)
+	res, err := PullFollowing(user.ID.Hex(), id)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusNoContent, gin.H{})
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"modifiedCount": res.ModifiedCount}))
+}
+
+func addSavedPost(c *gin.Context) {
+	var object utils.ObjectId
+	json.NewDecoder(c.Request.Body).Decode(&object)
+
+	user := getUserFromMiddleware(c)
+	if user == nil {
+		c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("You need to login first!"))
+		return
+	}
+	res, err := AddSavedPostDatabase(user.ID.Hex(), object.ID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"modifiedCount": res.ModifiedCount}))
+}
+
+func deleteSavedPost(c *gin.Context) {
+	var object utils.ObjectId
+	json.NewDecoder(c.Request.Body).Decode(&object)
+
+	user := getUserFromMiddleware(c)
+	if user == nil {
+		c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("You need to login first!"))
+		return
+	}
+
+	res, err := DeleteSavedPostDatabase(user.ID.Hex(), object.ID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"modifiedCount": res.ModifiedCount}))
+}
+
+func getFollowersOrFollowing(c *gin.Context, callback func(id string, user *User) ([]User, error)) {
+	id := c.Param("id")
+	user := getUserFromMiddleware(c)
+
+	var users []User
+	var err error
+	if id == "self" {
+		if user == nil {
+			c.JSON(http.StatusUnauthorized, jsend.GetJSendFail("You need to login first!"))
+			return
+		}
+		users, err = callback(user.ID.Hex(), user)
+	} else {
+		users, err = callback(id, user)
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("sorry, we couldn't get your data :("))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"users": users}))
+}
+
+func getFollowers(c *gin.Context) {
+	getFollowersOrFollowing(c, getUserFollowers)
+}
+
+func getFollowing(c *gin.Context) {
+	getFollowersOrFollowing(c, getUserFollowing)
 }

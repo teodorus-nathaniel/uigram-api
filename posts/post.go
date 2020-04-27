@@ -62,7 +62,9 @@ func (post *Post) processData(user *users.User) {
 	post.Owner = &Owner{ID: res.ID.Hex(), ProfilePic: res.ProfilePic, Username: res.Username, Followed: false}
 	if user != nil {
 		post.Owner.Followed = utils.SearchArray(user.Following, post.Owner.ID)
+		post.Saved = utils.SearchArray(user.SavedPosts, post.ID.Hex())
 	}
+
 	// post.Liked = cari itu ama saved jg ama disliked
 }
 

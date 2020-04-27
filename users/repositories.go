@@ -89,7 +89,7 @@ func DeleteArrayElement(id, attribute, data string) (*mongo.UpdateResult, error)
 	}
 	res, err := database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
 		"$pull": primitive.M{
-			attribute: primitive.A{oidData.Hex()},
+			attribute: oidData.Hex(),
 		},
 	})
 
@@ -113,4 +113,99 @@ func PullFollower(id, follower string) (*mongo.UpdateResult, error) {
 
 func PullFollowing(id, following string) (*mongo.UpdateResult, error) {
 	return DeleteArrayElement(id, "following", following)
+}
+
+func AddSavedPostDatabase(id, postId string) (*mongo.UpdateResult, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	return database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
+		"$push": primitive.M{
+			"savedPosts": primitive.M{
+				"$each":     primitive.A{postId},
+				"$position": 0,
+			},
+		},
+	})
+}
+
+func DeleteSavedPostDatabase(id, postId string) (*mongo.UpdateResult, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	return database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
+		"$pull": primitive.M{
+			"savedPosts": postId,
+		},
+	})
+}
+
+func getUsersDataFromCursor(cursor *mongo.Cursor, self *User) []User {
+	users := []User{}
+	defer cursor.Close(database.Context)
+	for cursor.Next(database.Context) {
+		var user User
+		cursor.Decode(&user)
+		user.DeriveAttributesAndHideCredentials(self)
+
+		users = append(users, user)
+	}
+
+	return users
+}
+
+func getUserFollowers(id string, self *User) ([]User, error) {
+	user, err := GetUserById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := []primitive.ObjectID{}
+	for _, id := range user.Followers {
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err == nil {
+			ids = append(ids, oid)
+		}
+	}
+
+	cursor, err := database.UsersCollection.Find(database.Context, primitive.M{
+		"_id": primitive.M{
+			"$in": ids,
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return getUsersDataFromCursor(cursor, self), nil
+}
+
+func getUserFollowing(id string, self *User) ([]User, error) {
+	user, err := GetUserById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := []primitive.ObjectID{}
+	for _, id := range user.Following {
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err == nil {
+			ids = append(ids, oid)
+		}
+	}
+
+	cursor, err := database.UsersCollection.Find(database.Context, primitive.M{
+		"_id": primitive.M{
+			"$in": ids,
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return getUsersDataFromCursor(cursor, self), nil
 }

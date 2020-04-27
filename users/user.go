@@ -7,7 +7,6 @@ import (
 	"github.com/teodorus-nathaniel/uigram-api/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/exp/errors/fmt"
 )
 
 type Credentials struct {
@@ -18,6 +17,7 @@ type Credentials struct {
 type User struct {
 	ID             *primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	Password       *string             `json:"password,omitempty" bson:"password"`
+	SavedPosts     []string            `json:"-" bson:"savedPosts"`
 	Email          string              `json:"email" bson:"email"`
 	Username       string              `json:"username" bson:"username"`
 	Fullname       string              `json:"fullname" bson:"fullname"`
@@ -70,7 +70,6 @@ func (user *User) DeriveAttributesAndHideCredentials(self *User) {
 	user.FollowersCount = len(user.Followers)
 	user.FollowingCount = len(user.Following)
 
-	fmt.Println(self.Following, user.ID.Hex())
 	if self != nil && utils.SearchArray(self.Following, user.ID.Hex()) {
 		user.Followed = true
 	}

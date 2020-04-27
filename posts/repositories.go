@@ -118,3 +118,28 @@ func insertPost(document Post, user *users.User) (*Post, error) {
 
 	return post, nil
 }
+
+func getSavedPosts(sort string, limit, page int, user *users.User) ([]Post, error) {
+	opts := getFindQueryOptions(sort, limit, page)
+
+	var ids []primitive.ObjectID
+	for _, id := range user.SavedPosts {
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err == nil {
+			ids = append(ids, oid)
+		}
+	}
+
+	cursor, err := database.PostsCollection.Find(database.Context, bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		}}, opts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	posts := getPostsDataFromCursor(cursor, user)
+
+	return posts, nil
+}

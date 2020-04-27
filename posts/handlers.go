@@ -95,3 +95,15 @@ func getUserPostHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"posts": posts}))
 }
+
+func getUserSavedPostHandler(c *gin.Context) {
+	sort, limit, page := utils.GetQueryStringsForPagination(c)
+
+	posts, err := getSavedPosts(sort, limit, page, getUserFromMiddleware(c))
+	if err != nil {
+		c.JSON(http.StatusNotFound, jsend.GetJSendFail("Fail fetching user posts"))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"posts": posts}))
+}
