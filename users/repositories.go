@@ -120,6 +120,7 @@ func AddSavedPostDatabase(id, postId string) (*mongo.UpdateResult, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
 		"$push": primitive.M{
 			"savedPosts": primitive.M{

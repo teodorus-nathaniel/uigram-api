@@ -122,7 +122,7 @@ func insertPost(document Post, user *users.User) (*Post, error) {
 func getSavedPosts(sort string, limit, page int, user *users.User) ([]Post, error) {
 	opts := getFindQueryOptions(sort, limit, page)
 
-	var ids []primitive.ObjectID
+	ids := []primitive.ObjectID{}
 	for _, id := range user.SavedPosts {
 		oid, err := primitive.ObjectIDFromHex(id)
 		if err == nil {

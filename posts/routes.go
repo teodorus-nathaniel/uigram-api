@@ -12,4 +12,5 @@ func Routes(router *gin.RouterGroup) {
 	router.GET("/users/:id/saved", users.Protect(), getUserSavedPostHandler)
 	router.GET("/posts/:id/feeds", users.Protect(), getPostsFeedsHandler)
 	router.POST("/posts", users.Protect(), postPostHandler)
+	router.POST("/screenshot", users.Protect(), postScreenshot)
 }

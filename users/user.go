@@ -37,6 +37,9 @@ func (user *User) fillEmptyValues() {
 	if user.Following == nil {
 		user.Following = []string{}
 	}
+	if user.SavedPosts == nil {
+		user.SavedPosts = []string{}
+	}
 }
 
 func (user *User) hashPassword() error {

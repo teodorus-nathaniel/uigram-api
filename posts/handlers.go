@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
+	"github.com/teodorus-nathaniel/uigram-api/nodejs"
 	"github.com/teodorus-nathaniel/uigram-api/users"
 	"github.com/teodorus-nathaniel/uigram-api/utils"
 )
@@ -101,9 +102,23 @@ func getUserSavedPostHandler(c *gin.Context) {
 
 	posts, err := getSavedPosts(sort, limit, page, getUserFromMiddleware(c))
 	if err != nil {
-		c.JSON(http.StatusNotFound, jsend.GetJSendFail("Fail fetching user posts"))
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("Fail fetching user posts"))
 		return
 	}
 
 	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"posts": posts}))
+}
+
+type screenshotReqBody struct {
+	URL string `json:"url"`
+}
+
+func postScreenshot(c *gin.Context) {
+	var url screenshotReqBody
+	json.NewDecoder(c.Request.Body).Decode(&url)
+
+	res := nodejs.ExecScreenshot(url.URL)
+	res = "http://localhost:8080/" + res
+
+	c.JSON(http.StatusCreated, jsend.GetJSendSuccess(gin.H{"url": res}))
 }
