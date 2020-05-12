@@ -32,7 +32,7 @@ func getDatabaseConnection() string {
 
 func loadEnv() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading env", err.Error())
+		log.Println("Error loading env", err.Error())
 	}
 }
 
