@@ -26,8 +26,10 @@ func main() {
 	router.GET("/img/:filename", func(c *gin.Context) {
 		filePath := "img/"
 		file, exists := c.Params.Get("filename")
-		if !exists || !strings.HasSuffix(file, ".jpg") {
+		fmt.Println(file)
+		if !exists || (!strings.HasSuffix(file, ".jpg") && !strings.HasSuffix(file, ".png")) {
 			c.JSON(http.StatusBadRequest, jsend.GetJSendFail("file not found"))
+			return
 		}
 		c.File(filePath + file)
 	})

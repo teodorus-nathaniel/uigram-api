@@ -15,4 +15,5 @@ func Routes(router *gin.RouterGroup) {
 	router.PATCH("/users/:id/delete-saved", Protect(), deleteSavedPost)
 	router.PATCH("/users/:id/follow", Protect(), followUserHandler)
 	router.PATCH("/users/:id/unfollow", Protect(), unfollowUserHandler)
+	router.PATCH("/users/:id", Protect(), updateUserHandler)
 }

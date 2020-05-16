@@ -2,6 +2,7 @@ package users
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -142,4 +143,41 @@ func getFollowers(c *gin.Context) {
 
 func getFollowing(c *gin.Context) {
 	getFollowersOrFollowing(c, getUserFollowing)
+}
+
+func updateUserHandler(c *gin.Context) {
+	fmt.Println("amasdf")
+	user := getUserFromMiddleware(c)
+	profilePic, _ := c.FormFile("profilePic")
+	username, _ := c.GetPostForm("username")
+	fullname, _ := c.GetPostForm("fullname")
+	status, _ := c.GetPostForm("status")
+
+	path := ""
+	if profilePic != nil {
+		path = "img/" + profilePic.Filename
+		err := c.SaveUploadedFile(profilePic, path)
+
+		path = "http://localhost:8080/" + path
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("File upload fail"))
+			return
+		}
+	}
+
+	res, err := updateUser(user.ID, username, fullname, status, path)
+	fmt.Println(res, err)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("Update user failed"))
+		return
+	}
+
+	newUser, err := GetUserById(user.ID.Hex())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("Can't get user"))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"user": newUser}))
 }

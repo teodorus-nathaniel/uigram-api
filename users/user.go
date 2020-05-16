@@ -21,7 +21,7 @@ type User struct {
 	Email          string              `json:"email" bson:"email"`
 	Username       string              `json:"username" bson:"username"`
 	Fullname       string              `json:"fullname" bson:"fullname"`
-	ProfilePic     string              `json:"profilePicture,omitempty" bson:"profilePicture"`
+	ProfilePic     string              `json:"profilePic,omitempty" bson:"profilePicture"`
 	Followers      []string            `json:"-" bson:"followers"`
 	Following      []string            `json:"-" bson:"following"`
 	FollowingCount int                 `json:"followingCount" bson:"-"`

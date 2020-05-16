@@ -3,7 +3,6 @@ package posts
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"github.com/teodorus-nathaniel/uigram-api/users"
@@ -47,17 +46,26 @@ func getPosts(sort string, limit int, page int, user *users.User) ([]Post, error
 
 	var cursor *mongo.Cursor
 	var err error
+
+	var notEqualUser *bson.M
+	if user == nil {
+		notEqualUser = &bson.M{}
+	} else {
+		notEqualUser = &bson.M{
+			"userId": bson.M{
+				"$ne": user.ID.Hex(),
+			},
+		}
+	}
+
 	if sort == "likesCount" {
 		allowDiskUse := true
 		aggregateOpts := options.Aggregate()
 		aggregateOpts.AllowDiskUse = &allowDiskUse
+
 		cursor, err = database.PostsCollection.Aggregate(database.Context, bson.A{
 			bson.M{
-				"$match": bson.M{
-					"userId": bson.M{
-						"$ne": user.ID.Hex(),
-					},
-				},
+				"$match": notEqualUser,
 			},
 			bson.M{
 				"$addFields": bson.M{
@@ -85,11 +93,7 @@ func getPosts(sort string, limit int, page int, user *users.User) ([]Post, error
 		},
 			aggregateOpts)
 	} else {
-		cursor, err = database.PostsCollection.Find(database.Context, bson.M{
-			"userId": bson.M{
-				"$ne": user.ID.Hex(),
-			},
-		}, opts)
+		cursor, err = database.PostsCollection.Find(database.Context, notEqualUser, opts)
 	}
 	if err != nil {
 		return nil, err
@@ -148,11 +152,17 @@ func GetPostByOwner(id, sort string, limit, page int, user *users.User) ([]Post,
 	return posts, nil
 }
 
-func insertPost(document Post, user *users.User) (*Post, error) {
-	document.ID = primitive.NilObjectID
-	document.Timestamp = time.Now().Unix()
-
-	res, err := database.Database.Collection("posts").InsertOne(database.Context, document)
+func insertPost(images []string, title, description, link string, timestamp int64, user *users.User) (*Post, error) {
+	res, err := database.PostsCollection.InsertOne(database.Context, bson.M{
+		"userId":      user.ID.Hex(),
+		"title":       title,
+		"likes":       []string{},
+		"dislikes":    []string{},
+		"description": description,
+		"link":        link,
+		"images":      images,
+		"timestamp":   timestamp,
+	})
 	if err != nil {
 		return nil, err
 	}

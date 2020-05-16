@@ -3,8 +3,11 @@ package posts
 import (
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
@@ -62,28 +65,64 @@ func getPostHandler(c *gin.Context) {
 }
 
 func postPostHandler(c *gin.Context) {
-	var post Post
-	json.NewDecoder(c.Request.Body).Decode(&post)
+	user := getUserFromMiddleware(c)
+	description, _ := c.GetPostForm("description")
+	title, _ := c.GetPostForm("title")
+	link, _ := c.GetPostForm("link")
+	files := c.Request.MultipartForm.File["files"]
+	images, _ := c.GetPostFormArray("images")
 
-	err := post.validateData()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, jsend.GetJSendFail(err.Error()))
+	var dataImages []string
+	var filePaths []string
+	timestamp := time.Now().Unix()
+	filesLen := len(files)
+
+	for _, image := range images {
+		tokens := strings.Split(image, "--")
+		if len(tokens) < 2 {
+			dataImages = append(dataImages, image)
+			continue
+		}
+		idx, err := strconv.Atoi(tokens[1])
+		if err != nil || idx >= filesLen {
+			dataImages = append(dataImages, image)
+			continue
+		}
+
+		path := "img/post-" +
+			strconv.Itoa(idx) +
+			strconv.FormatInt(timestamp, 10) +
+			"-" + user.ID.Hex() +
+			filepath.Ext(files[idx].Filename)
+		filePaths = append(filePaths, path)
+
+		path = "http://localhost:8080/" + path
+		dataImages = append(dataImages, path)
+	}
+
+	if len(filePaths) != len(files) {
+		c.JSON(http.StatusBadRequest, jsend.GetJSendFail("Files not match"))
 		return
 	}
 
-	post.fillEmptyValues()
+	for idx, file := range files {
+		err := c.SaveUploadedFile(file, filePaths[idx])
 
-	user, _ := c.Get("user")
-	post.UserID = user.(*users.User).ID.Hex()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("File upload fail"))
+			return
+		}
+	}
 
-	res, err := insertPost(post, getUserFromMiddleware(c))
+	post, err := insertPost(dataImages, title, description, link, timestamp, user)
+	post.deriveToPost(user)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"post": res}))
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"post": post}))
 }
 
 func getUserPostHandler(c *gin.Context) {

@@ -2,6 +2,7 @@ package users
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -209,4 +210,24 @@ func getUserFollowing(id string, self *User) ([]User, error) {
 	}
 
 	return getUsersDataFromCursor(cursor, self), nil
+}
+
+func updateUser(id *primitive.ObjectID, username, fullname, status, imagePath string) (*mongo.UpdateResult, error) {
+	updateObj := primitive.D{}
+	if username != "" {
+		updateObj = append(updateObj, primitive.E{Key: "username", Value: username})
+	}
+	if fullname != "" {
+		updateObj = append(updateObj, primitive.E{Key: "fullname", Value: fullname})
+	}
+	if status != "" {
+		updateObj = append(updateObj, primitive.E{Key: "status", Value: status})
+	}
+	if imagePath != "" {
+		updateObj = append(updateObj, primitive.E{Key: "profilePicture", Value: imagePath})
+	}
+
+	fmt.Println(updateObj)
+
+	return database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": id}, primitive.M{"$set": updateObj})
 }

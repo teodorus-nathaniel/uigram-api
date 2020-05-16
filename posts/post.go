@@ -20,8 +20,8 @@ type Post struct {
 	UserID        string             `json:"-" bson:"userId"`
 	Title         string             `json:"title" bson:"title"`
 	Owner         *Owner             `json:"owner" bson:"-"`
-	Likes         []string           `json:"likes" bson:"likes"`
-	Dislikes      []string           `json:"dislikes" bson:"dislikes"`
+	Likes         []string           `json:"-" bson:"likes"`
+	Dislikes      []string           `json:"-" bson:"dislikes"`
 	Description   *string            `json:"description,omitempty" bson:"description"`
 	Link          *string            `json:"link,omitempty" bson:"link,omitempty"`
 	Images        []string           `json:"images" bson:"images"`
