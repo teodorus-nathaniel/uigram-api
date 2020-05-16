@@ -3,6 +3,8 @@ package posts
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
@@ -117,8 +119,39 @@ func postScreenshot(c *gin.Context) {
 	var url screenshotReqBody
 	json.NewDecoder(c.Request.Body).Decode(&url)
 
+	matched, err := regexp.MatchString(`^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$`, url.URL)
+	if err != nil || !matched {
+		c.JSON(http.StatusBadRequest, jsend.GetJSendFail("Invalid URL"))
+		return
+	}
+
+	if !strings.HasPrefix(url.URL, "http://") && !strings.HasPrefix(url.URL, "https://") {
+		url.URL = "http://" + url.URL
+	}
+
 	res := nodejs.ExecScreenshot(url.URL)
+
 	res = "http://localhost:8080/" + res
 
 	c.JSON(http.StatusCreated, jsend.GetJSendSuccess(gin.H{"url": res}))
+}
+
+type patchLikesReqBody struct {
+	Like    *bool `json:"like,omitempty"`
+	Dislike *bool `json:"dislike,omitempty"`
+}
+
+func patchLikes(c *gin.Context) {
+	user := getUserFromMiddleware(c)
+	id, _ := c.Params.Get("id")
+	var body patchLikesReqBody
+	json.NewDecoder(c.Request.Body).Decode(&body)
+
+	post, err := updatePostLikes(user, id, body.Like, body.Dislike)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, jsend.GetJSendSuccess(gin.H{"post": post}))
 }

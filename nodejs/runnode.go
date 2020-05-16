@@ -17,7 +17,7 @@ func ExecScreenshot(url string) string {
 
 	output := string(data)
 	output = output[0 : len(output)-1]
-	time.AfterFunc(20*time.Second, func() {
+	time.AfterFunc(20*time.Minute, func() {
 		os.Remove(output)
 	})
 

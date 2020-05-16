@@ -1,6 +1,8 @@
 package posts
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
@@ -43,7 +45,52 @@ func getPostsDataFromCursor(cursor *mongo.Cursor, user *users.User) []Post {
 func getPosts(sort string, limit int, page int, user *users.User) ([]Post, error) {
 	opts := getFindQueryOptions(sort, limit, page)
 
-	cursor, err := database.PostsCollection.Find(database.Context, bson.M{}, opts)
+	var cursor *mongo.Cursor
+	var err error
+	if sort == "likesCount" {
+		allowDiskUse := true
+		aggregateOpts := options.Aggregate()
+		aggregateOpts.AllowDiskUse = &allowDiskUse
+		cursor, err = database.PostsCollection.Aggregate(database.Context, bson.A{
+			bson.M{
+				"$match": bson.M{
+					"userId": bson.M{
+						"$ne": user.ID.Hex(),
+					},
+				},
+			},
+			bson.M{
+				"$addFields": bson.M{
+					"likesCount": bson.M{
+						"$size": bson.M{
+							"$ifNull": bson.A{
+								"$likes", bson.A{},
+							},
+						},
+					},
+				},
+			},
+			bson.M{
+				"$sort": bson.M{
+					"likesCount": -1,
+					"timestamp":  -1,
+				},
+			},
+			bson.M{
+				"$skip": opts.Skip,
+			},
+			bson.M{
+				"$limit": opts.Limit,
+			},
+		},
+			aggregateOpts)
+	} else {
+		cursor, err = database.PostsCollection.Find(database.Context, bson.M{
+			"userId": bson.M{
+				"$ne": user.ID.Hex(),
+			},
+		}, opts)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -142,4 +189,55 @@ func getSavedPosts(sort string, limit, page int, user *users.User) ([]Post, erro
 	posts := getPostsDataFromCursor(cursor, user)
 
 	return posts, nil
+}
+
+func updatePostLikes(user *users.User, id string, like, dislike *bool) (*Post, error) {
+	post, err := getPost(id, user)
+	if err != nil {
+		return nil, err
+	}
+
+	var attribute string
+	var otherAttribute string
+	var action bool
+	if like == nil {
+		attribute = "dislikes"
+		otherAttribute = "likes"
+		action = *dislike
+	} else if dislike == nil {
+		attribute = "likes"
+		otherAttribute = "dislikes"
+		action = *like
+	}
+
+	oid, _ := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, errors.New("ID is not valid")
+	}
+
+	if action == true {
+		fmt.Println(action, attribute)
+		database.PostsCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
+			"$pull": primitive.M{
+				otherAttribute: user.ID.Hex(),
+			},
+		})
+		database.PostsCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
+			"$push": primitive.M{
+				attribute: primitive.M{
+					"$each":     primitive.A{user.ID.Hex()},
+					"$position": 0,
+				},
+			},
+		})
+	} else {
+		database.PostsCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
+			"$pull": primitive.M{
+				attribute: user.ID.Hex(),
+			},
+		})
+	}
+
+	post, err = getPost(id, user)
+	return post, err
 }

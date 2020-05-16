@@ -13,4 +13,5 @@ func Routes(router *gin.RouterGroup) {
 	router.GET("/posts/:id/feeds", users.Protect(), getPostsFeedsHandler)
 	router.POST("/posts", users.Protect(), postPostHandler)
 	router.POST("/screenshot", users.Protect(), postScreenshot)
+	router.PATCH("/posts/:id/likes", users.Protect(), patchLikes)
 }

@@ -63,9 +63,10 @@ func (post *Post) processData(user *users.User) {
 	if user != nil {
 		post.Owner.Followed = utils.SearchArray(user.Following, post.Owner.ID)
 		post.Saved = utils.SearchArray(user.SavedPosts, post.ID.Hex())
+		post.Liked = utils.SearchArray(post.Likes, user.ID.Hex())
+		post.Disliked = utils.SearchArray(post.Dislikes, user.ID.Hex())
 	}
 
-	// post.Liked = cari itu ama saved jg ama disliked
 }
 
 func (post *Post) deriveToPost(user *users.User) {
