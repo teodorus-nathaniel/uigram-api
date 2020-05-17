@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	cors "github.com/rs/cors/wrapper/gin"
 
+	"github.com/teodorus-nathaniel/uigram-api/comments"
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
 	"github.com/teodorus-nathaniel/uigram-api/posts"
@@ -17,6 +18,7 @@ import (
 func initializeRoutes(router *gin.RouterGroup) {
 	posts.Routes(router)
 	users.Routes(router)
+	comments.Routes(router)
 }
 
 func main() {

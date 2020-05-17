@@ -3,6 +3,7 @@ package posts
 import (
 	"errors"
 
+	"github.com/teodorus-nathaniel/uigram-api/comments"
 	"github.com/teodorus-nathaniel/uigram-api/users"
 	"github.com/teodorus-nathaniel/uigram-api/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -28,7 +29,7 @@ type Post struct {
 	Timestamp     int64              `json:"timestamp" bson:"timestamp"`
 	LikeCount     int                `json:"likeCount" bson:"-"`
 	DislikeCount  int                `json:"dislikeCount" bson:"-"`
-	CommentsCount int                `json:"commentsCount" bson:"-"`
+	CommentsCount int64              `json:"commentsCount" bson:"-"`
 	Liked         bool               `json:"liked,omitempty" bson:"-"`
 	Disliked      bool               `json:"disliked,omitempty" bson:"-"`
 	Saved         bool               `json:"saved,omitempty" bson:"-"`
@@ -66,7 +67,7 @@ func (post *Post) processData(user *users.User) {
 		post.Liked = utils.SearchArray(post.Likes, user.ID.Hex())
 		post.Disliked = utils.SearchArray(post.Dislikes, user.ID.Hex())
 	}
-
+	post.CommentsCount = comments.GetCommentsCount(post.ID.Hex())
 }
 
 func (post *Post) deriveToPost(user *users.User) {

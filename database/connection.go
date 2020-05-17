@@ -18,6 +18,7 @@ var Database *mongo.Database
 var Context context.Context
 var PostsCollection *mongo.Collection
 var UsersCollection *mongo.Collection
+var CommentsCollection *mongo.Collection
 
 func getDatabaseConnection() string {
 	databaseConn := os.Getenv("DATABASE_CONNECTION")
@@ -56,4 +57,5 @@ func init() {
 	Database = Client.Database(databaseName)
 	PostsCollection = Database.Collection("posts")
 	UsersCollection = Database.Collection("users")
+	CommentsCollection = Database.Collection("comments")
 }

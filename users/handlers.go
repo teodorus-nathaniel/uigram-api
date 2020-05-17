@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
@@ -155,7 +156,7 @@ func updateUserHandler(c *gin.Context) {
 
 	path := ""
 	if profilePic != nil {
-		path = "img/" + profilePic.Filename
+		path = "img/" + user.ID.Hex() + filepath.Ext(profilePic.Filename)
 		err := c.SaveUploadedFile(profilePic, path)
 
 		path = "http://localhost:8080/" + path
