@@ -39,8 +39,8 @@ func main() {
 	})
 
 	router.Use(cors.New(cors.Options{
-		Debug:          true,
 		AllowedOrigins: []string{"http://localhost:3000", "http://uigram.herokuapp.com", "https://uigram.herokuapp.com"},
+		Debug:          true,
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 		AllowedMethods: []string{"POST", "GET", "HEAD", "PATCH"},
 	}))
