@@ -69,6 +69,17 @@ func postPostHandler(c *gin.Context) {
 	description, _ := c.GetPostForm("description")
 	title, _ := c.GetPostForm("title")
 	link, _ := c.GetPostForm("link")
+
+	matched, err := regexp.MatchString(`^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$`, link)
+	if err != nil || !matched {
+		c.JSON(http.StatusBadRequest, jsend.GetJSendFail("Invalid URL"))
+		return
+	}
+
+	if !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") {
+		link = "http://" + link
+	}
+
 	files := c.Request.MultipartForm.File["files"]
 	images, _ := c.GetPostFormArray("images")
 
