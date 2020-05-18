@@ -2,7 +2,6 @@ package comments
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
@@ -44,7 +43,6 @@ func getFindQueryOptions(sort string, limit, page int) *options.FindOptions {
 
 func getCommentsByPostId(postID string, sort string, limit, page int, user *users.User) ([]Comment, error) {
 	opts := getFindQueryOptions(sort, limit, page)
-	fmt.Println(opts)
 
 	cursor, err := database.CommentsCollection.Find(database.Context, bson.M{"postId": postID, "parent": nil}, opts)
 	if err != nil {

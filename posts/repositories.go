@@ -2,7 +2,6 @@ package posts
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"github.com/teodorus-nathaniel/uigram-api/users"
@@ -226,7 +225,6 @@ func updatePostLikes(user *users.User, id string, like, dislike *bool) (*Post, e
 	}
 
 	if action == true {
-		fmt.Println(action, attribute)
 		database.PostsCollection.UpdateOne(database.Context, primitive.M{"_id": oid}, primitive.M{
 			"$pull": primitive.M{
 				otherAttribute: user.ID.Hex(),

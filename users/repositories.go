@@ -2,7 +2,6 @@ package users
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -226,8 +225,6 @@ func updateUser(id *primitive.ObjectID, username, fullname, status, imagePath st
 	if imagePath != "" {
 		updateObj = append(updateObj, primitive.E{Key: "profilePicture", Value: imagePath})
 	}
-
-	fmt.Println(updateObj)
 
 	return database.UsersCollection.UpdateOne(database.Context, primitive.M{"_id": id}, primitive.M{"$set": updateObj})
 }

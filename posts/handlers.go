@@ -3,7 +3,6 @@ package posts
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -184,9 +183,8 @@ func postScreenshot(c *gin.Context) {
 	cleanedURL := strings.ReplaceAll(url.URL, "/", "")
 	cleanedURL = strings.ReplaceAll(cleanedURL, ".", "")
 	cleanedURL = strings.ReplaceAll(cleanedURL, ":", "")
+	cleanedURL = cleanedURL[0:20]
 	filepath := "img/" + cleanedURL + strconv.Itoa(rand.Intn(1000)) + ".jpeg"
-	fmt.Println(strings.ReplaceAll(url.URL, "/", ""))
-	fmt.Println(filepath)
 	if err := ioutil.WriteFile(filepath, buf, 0644); err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
 		return

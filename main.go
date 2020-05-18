@@ -31,8 +31,7 @@ func main() {
 	router.GET("/img/:filename", func(c *gin.Context) {
 		filePath := "img/"
 		file, exists := c.Params.Get("filename")
-		fmt.Println(file)
-		if !exists || (!strings.HasSuffix(file, ".jpg") && !strings.HasSuffix(file, ".png")) {
+		if !exists || (!strings.HasSuffix(file, ".jpg") && (!strings.HasSuffix(file, ".jpeg")) && !strings.HasSuffix(file, ".png")) {
 			c.JSON(http.StatusBadRequest, jsend.GetJSendFail("file not found"))
 			return
 		}
@@ -40,6 +39,7 @@ func main() {
 	})
 
 	router.Use(cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3000", "http://uigram.herokuapp.com", "https://uigram.herokuapp.com"},
 		Debug:          true,
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 		AllowedMethods: []string{"POST", "GET", "HEAD", "PATCH"},

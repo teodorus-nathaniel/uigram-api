@@ -2,7 +2,6 @@ package users
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"path/filepath"
 
@@ -147,7 +146,6 @@ func getFollowing(c *gin.Context) {
 }
 
 func updateUserHandler(c *gin.Context) {
-	fmt.Println("amasdf")
 	user := getUserFromMiddleware(c)
 	profilePic, _ := c.FormFile("profilePic")
 	username, _ := c.GetPostForm("username")
@@ -167,8 +165,7 @@ func updateUserHandler(c *gin.Context) {
 		}
 	}
 
-	res, err := updateUser(user.ID, username, fullname, status, path)
-	fmt.Println(res, err)
+	_, err := updateUser(user.ID, username, fullname, status, path)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("Update user failed"))
 		return
