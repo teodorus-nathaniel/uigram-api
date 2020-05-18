@@ -3,6 +3,7 @@ package screenshot
 import (
 	"context"
 	"math"
+	"time"
 
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
@@ -29,6 +30,8 @@ func FullScreenshot(urlstr string, quality int64, res *[]byte) chromedp.Tasks {
 			if err != nil {
 				return err
 			}
+
+			time.Sleep(time.Second * 15)
 
 			*res, err = page.CaptureScreenshot().WithFormat(page.CaptureScreenshotFormatJpeg).
 				WithQuality(quality).
