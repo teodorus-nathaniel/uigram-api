@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -24,7 +25,13 @@ func initializeRoutes(router *gin.RouterGroup) {
 }
 
 func main() {
+	_, err := os.Stat("img")
+	if os.IsNotExist(err) {
+		os.Mkdir("img", 0755)
+	}
+
 	rand.Seed(time.Now().UnixNano())
+
 	defer database.Client.Disconnect(database.Context)
 	router := gin.Default()
 
