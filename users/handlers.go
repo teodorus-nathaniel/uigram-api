@@ -157,7 +157,7 @@ func updateUserHandler(c *gin.Context) {
 		path = "img/" + user.ID.Hex() + filepath.Ext(profilePic.Filename)
 		err := c.SaveUploadedFile(profilePic, path)
 
-		path = "http://localhost:8080/" + path
+		path = utils.URL + path
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("File upload fail"))

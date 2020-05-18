@@ -101,7 +101,7 @@ func postPostHandler(c *gin.Context) {
 			filepath.Ext(files[idx].Filename)
 		filePaths = append(filePaths, path)
 
-		path = "http://localhost:8080/" + path
+		path = utils.URL + path
 		dataImages = append(dataImages, path)
 	}
 
@@ -190,7 +190,7 @@ func postScreenshot(c *gin.Context) {
 		return
 	}
 
-	res := "http://localhost:8080/" + filepath
+	res := utils.URL + filepath
 
 	c.JSON(http.StatusCreated, jsend.GetJSendSuccess(gin.H{"url": res}))
 }
