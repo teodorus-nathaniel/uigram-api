@@ -2,7 +2,9 @@ const puppeteer = require('puppeteer');
 const sharp = require('sharp');
 
 const takeScreenshot = async (url) => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: [ '--no-sandbox' ]
+  });
   const page = await browser.newPage();
 
   await page.goto(url, {
