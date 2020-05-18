@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -191,6 +192,10 @@ func postScreenshot(c *gin.Context) {
 	}
 
 	res := utils.URL + filepath
+
+	time.AfterFunc(time.Hour*1, func() {
+		os.Remove(filepath)
+	})
 
 	c.JSON(http.StatusCreated, jsend.GetJSendSuccess(gin.H{"url": res}))
 }
