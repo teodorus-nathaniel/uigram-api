@@ -20,7 +20,7 @@ type Comment struct {
 	UserID       string             `json:"-" bson:"userId"`
 	Likes        []string           `json:"likes" bson:"likes"`
 	Dislikes     []string           `json:"dislikes" bson:"dislikes"`
-	Parent       *string            `json:"-" bson:"parent,omitempty"`
+	Parent       *string            `json:"parent,omitempty" bson:"parent,omitempty"`
 	Timestamp    int64              `json:"timestamp" bson:"timestamp"`
 	Owner        Owner              `json:"owner" bson:"-"`
 	Liked        bool               `json:"liked" bson:"-"`

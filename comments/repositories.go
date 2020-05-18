@@ -2,6 +2,8 @@ package comments
 
 import (
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/teodorus-nathaniel/uigram-api/database"
 	"github.com/teodorus-nathaniel/uigram-api/users"
@@ -42,6 +44,7 @@ func getFindQueryOptions(sort string, limit, page int) *options.FindOptions {
 
 func getCommentsByPostId(postID string, sort string, limit, page int, user *users.User) ([]Comment, error) {
 	opts := getFindQueryOptions(sort, limit, page)
+	fmt.Println(opts)
 
 	cursor, err := database.CommentsCollection.Find(database.Context, bson.M{"postId": postID, "parent": nil}, opts)
 	if err != nil {
@@ -147,4 +150,41 @@ func updateCommentLikes(id string, like, dislike *bool, user *users.User) (*Comm
 	}
 
 	return getComment(id, user)
+}
+
+func insertComment(postID, content string, user *users.User) (*Comment, error) {
+	res, err := database.CommentsCollection.InsertOne(database.Context, primitive.M{
+		"content":   content,
+		"postId":    postID,
+		"userId":    user.ID.Hex(),
+		"likes":     []string{},
+		"dislikes":  []string{},
+		"timestamp": time.Now().Unix(),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	id := res.InsertedID.(primitive.ObjectID)
+	return getComment(id.Hex(), user)
+}
+
+func insertReply(postID, parentID, content string, user *users.User) (*Comment, error) {
+	res, err := database.CommentsCollection.InsertOne(database.Context, primitive.M{
+		"content":   content,
+		"postId":    postID,
+		"parent":    parentID,
+		"userId":    user.ID.Hex(),
+		"likes":     []string{},
+		"dislikes":  []string{},
+		"timestamp": time.Now().Unix(),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	id := res.InsertedID.(primitive.ObjectID)
+	return getComment(id.Hex(), user)
 }
