@@ -3,8 +3,6 @@ module github.com/teodorus-nathaniel/uigram-api
 go 1.14
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20200116234248-4da64dd111ac
-	github.com/chromedp/chromedp v0.5.3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect

@@ -1,23 +1,17 @@
 package posts
 
 import (
-	"context"
 	"encoding/json"
-	"io/ioutil"
-	"log"
-	"math/rand"
 	"net/http"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/chromedp/chromedp"
 	"github.com/gin-gonic/gin"
 	"github.com/teodorus-nathaniel/uigram-api/jsend"
-	"github.com/teodorus-nathaniel/uigram-api/screenshot"
+	"github.com/teodorus-nathaniel/uigram-api/nodejs"
 	"github.com/teodorus-nathaniel/uigram-api/users"
 	"github.com/teodorus-nathaniel/uigram-api/utils"
 )
@@ -174,28 +168,9 @@ func postScreenshot(c *gin.Context) {
 		url.URL = "http://" + url.URL
 	}
 
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
+	res := nodejs.ExecScreenshot(url.URL)
 
-	var buf []byte
-	if err := chromedp.Run(ctx, screenshot.FullScreenshot(url.URL, 50, &buf)); err != nil {
-		log.Fatal(err)
-	}
-	cleanedURL := strings.ReplaceAll(url.URL, "/", "")
-	cleanedURL = strings.ReplaceAll(cleanedURL, ".", "")
-	cleanedURL = strings.ReplaceAll(cleanedURL, ":", "")
-	cleanedURL = cleanedURL[0:20]
-	filepath := "img/" + cleanedURL + strconv.Itoa(rand.Intn(1000)) + ".jpeg"
-	if err := ioutil.WriteFile(filepath, buf, 0644); err != nil {
-		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail(err.Error()))
-		return
-	}
-
-	res := utils.URL + filepath
-
-	time.AfterFunc(time.Hour*1, func() {
-		os.Remove(filepath)
-	})
+	res = utils.URL + res
 
 	c.JSON(http.StatusCreated, jsend.GetJSendSuccess(gin.H{"url": res}))
 }
