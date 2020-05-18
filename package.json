@@ -16,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/teodorus-nathaniel/ui-share-api/issues"
   },
-  "homepage": "https://github.com/teodorus-nathaniel/ui-share-api#readme"
+  "homepage": "https://github.com/teodorus-nathaniel/ui-share-api#readme",
+  "dependencies": {
+    "puppeteer": "^3.1.0",
+    "sharp": "^0.25.3"
+  }
 }
