@@ -3,6 +3,7 @@ package users
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
@@ -170,6 +171,8 @@ func updateUserHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, jsend.GetJSendFail("Update user failed"))
 		return
 	}
+
+	os.Remove(user.ProfilePic)
 
 	newUser, err := GetUserById(user.ID.Hex())
 	if err != nil {
